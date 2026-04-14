@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>TEST</title>
+		<style>
+    #calculator {
+        width: 250px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f0f0f0;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    #result {
+        width: 100%;
+        height: 50px;
+        margin-bottom: 15px;
+        font-size: 24px;
+        text-align: right;
+        padding: 5px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-family: monospace;
+    }
+    
+    .but_cal {
+        width: 50px;
+        height: 50px;
+        margin: 5px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background: white;
+        transition: 0.2s;
+    }
+    
+    .but_cal:hover {
+        background: #e0e0e0;
+        transform: scale(0.95);
+    }
+    
+    .but_cal:active {
+        background: #ccc;
+    }
+</style>
+	</head>
+	<body>
+		<div id="calculator">
+			<input type="text" id="result" readonly>
+			<button type="button" class="but_cal">1</button>
+			<button type="button" class="but_cal">2</button>
+			<button type="button" class="but_cal">3</button>
+			<button type="button" class="but_cal">4</button>
+			<button type="button" class="but_cal">5</button>
+			<button type="button" class="but_cal">6</button>
+			<button type="button" class="but_cal">7</button>
+			<button type="button" class="but_cal">8</button>
+			<button type="button" class="but_cal">9</button>
+			<button type="button" class="but_cal">0</button>
+			<button type="button" class="but_cal">=</button>
+			<button type="button" class="but_cal">+</button>
+			<button type="button" class="but_cal">-</button>
+			<button type="button" class="but_cal">/</button>
+			<button type="button" class="but_cal">*</button>
+			<button type="button" class="but_cal">C</button>
+		</div>
+		<script>
+    // Получаем элементы
+    const resultInput = document.getElementById('result');
+    const buttons = document.querySelectorAll('.but_cal');
+    
+    let currentExpression = ''; // Текущее выражение
+    
+    // Функция обновления дисплея
+    function updateDisplay() {
+        resultInput.value = currentExpression || '0';
+    }
+    
+    // Функция вычисления результата
+    function calculateResult() {
+        try {
+            // Заменяем знак умножения * на * для eval
+            // (используем Function вместо eval для безопасности)
+            const expression = currentExpression.replace(/[^-()\d/*+.]/g, '');
+            const result = Function('"use strict";return (' + expression + ')')();
+            
+            if (isNaN(result) || !isFinite(result)) {
+                throw new Error('Invalid calculation');
+            }
+            
+            currentExpression = String(result);
+            updateDisplay();
+        } catch (error) {
+            currentExpression = 'Ошибка';
+            updateDisplay();
+            setTimeout(() => {
+                if (currentExpression === 'Ошибка') {
+                    currentExpression = '';
+                    updateDisplay();
+                }
+            }, 1500);
+        }
+    }
+    
+    // Обработчик нажатия на кнопки
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            const value = button.textContent;
+            
+            // Обработка кнопки C (очистка)
+            if (value === 'C') {
+                currentExpression = '';
+                updateDisplay();
+                return;
+            }
+            
+            // Обработка кнопки = (вычисление)
+            if (value === '=') {
+                if (currentExpression) {
+                    calculateResult();
+                }
+                return;
+            }
+            
+            // Обработка остальных кнопок (цифры и операторы)
+            // Проверяем, чтобы не было двух операторов подряд
+            const lastChar = currentExpression.slice(-1);
+            const isOperator = (char) => ['+', '-', '*', '/'].includes(char);
+            
+            if (isOperator(lastChar) && isOperator(value)) {
+                // Заменяем последний оператор на новый
+                currentExpression = currentExpression.slice(0, -1) + value;
+            } else {
+                currentExpression += value;
+            }
+            
+            updateDisplay();
+        });
+    });
+    
+    // Добавляем поддержку клавиатуры
+    document.addEventListener('keydown', (event) => {
+        const key = event.key;
+        
+        // Цифры 0-9
+        if (/[0-9]/.test(key)) {
+            currentExpression += key;
+            updateDisplay();
+        }
+        // Операторы
+        else if (key === '+' || key === '-' || key === '*' || key === '/') {
+            const lastChar = currentExpression.slice(-1);
+            const isOperator = (char) => ['+', '-', '*', '/'].includes(char);
+            
+            if (isOperator(lastChar) && isOperator(key)) {
+                currentExpression = currentExpression.slice(0, -1) + key;
+            } else {
+                currentExpression += key;
+            }
+            updateDisplay();
+        }
+        // Enter для вычисления
+        else if (key === 'Enter') {
+            if (currentExpression) {
+                calculateResult();
+            }
+        }
+        // Escape или Delete для очистки
+        else if (key === 'Escape' || key === 'Delete') {
+            currentExpression = '';
+            updateDisplay();
+        }
+        // Backspace для удаления последнего символа
+        else if (key === 'Backspace') {
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay();
+        }
+    });
+    
+    // Инициализация дисплея
+    updateDisplay();
+</script>
+	</body>
+</html>
