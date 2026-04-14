@@ -69,22 +69,21 @@
 			<button type="button" class="but_cal">C</button>
 		</div>
 		<script>
-    // Получаем элементы
+
     const resultInput = document.getElementById('result');
     const buttons = document.querySelectorAll('.but_cal');
     
-    let currentExpression = ''; // Текущее выражение
+    let currentExpression = ''; 
     
-    // Функция обновления дисплея
+
     function updateDisplay() {
         resultInput.value = currentExpression || '0';
     }
     
-    // Функция вычисления результата
+
     function calculateResult() {
         try {
-            // Заменяем знак умножения * на * для eval
-            // (используем Function вместо eval для безопасности)
+
             const expression = currentExpression.replace(/[^-()\d/*+.]/g, '');
             const result = Function('"use strict";return (' + expression + ')')();
             
@@ -106,19 +105,19 @@
         }
     }
     
-    // Обработчик нажатия на кнопки
+
     buttons.forEach(button => {
         button.addEventListener('click', () => {
             const value = button.textContent;
             
-            // Обработка кнопки C (очистка)
+
             if (value === 'C') {
                 currentExpression = '';
                 updateDisplay();
                 return;
             }
             
-            // Обработка кнопки = (вычисление)
+
             if (value === '=') {
                 if (currentExpression) {
                     calculateResult();
@@ -126,13 +125,12 @@
                 return;
             }
             
-            // Обработка остальных кнопок (цифры и операторы)
-            // Проверяем, чтобы не было двух операторов подряд
+
             const lastChar = currentExpression.slice(-1);
             const isOperator = (char) => ['+', '-', '*', '/'].includes(char);
             
             if (isOperator(lastChar) && isOperator(value)) {
-                // Заменяем последний оператор на новый
+
                 currentExpression = currentExpression.slice(0, -1) + value;
             } else {
                 currentExpression += value;
@@ -142,16 +140,16 @@
         });
     });
     
-    // Добавляем поддержку клавиатуры
+
     document.addEventListener('keydown', (event) => {
         const key = event.key;
         
-        // Цифры 0-9
+
         if (/[0-9]/.test(key)) {
             currentExpression += key;
             updateDisplay();
         }
-        // Операторы
+
         else if (key === '+' || key === '-' || key === '*' || key === '/') {
             const lastChar = currentExpression.slice(-1);
             const isOperator = (char) => ['+', '-', '*', '/'].includes(char);
@@ -163,25 +161,23 @@
             }
             updateDisplay();
         }
-        // Enter для вычисления
+
         else if (key === 'Enter') {
             if (currentExpression) {
                 calculateResult();
             }
         }
-        // Escape или Delete для очистки
+
         else if (key === 'Escape' || key === 'Delete') {
             currentExpression = '';
             updateDisplay();
         }
-        // Backspace для удаления последнего символа
         else if (key === 'Backspace') {
             currentExpression = currentExpression.slice(0, -1);
             updateDisplay();
         }
     });
     
-    // Инициализация дисплея
     updateDisplay();
 </script>
 	</body>
